@@ -30,6 +30,7 @@ public class Order {
     private String status;
     private long totalCents;
     private String paymentRef;
+    private String idempotencyKey;
     private Instant createdAt;
 
     // LAB: LAZY means "load the items only when someone touches them".
@@ -40,7 +41,8 @@ public class Order {
     protected Order() {
     }
 
-    public Order(Dealer dealer) {
+    public Order(Dealer dealer, String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
         this.dealer = dealer;
         this.status = "NEW";
         this.createdAt = Instant.now();

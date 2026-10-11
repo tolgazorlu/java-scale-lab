@@ -8,6 +8,7 @@ import com.tolgazorlu.lab.dealer.Dealer;
 import com.tolgazorlu.lab.dealer.DealerRepository;
 import com.tolgazorlu.lab.payment.PaymentClient;
 import java.util.List;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,8 +47,31 @@ public class OrderService {
      * 2. no tx: charge the payment provider (may take seconds, holds no connection)
      * 3. tx: mark PAID, or FAILED and give the stock back
      */
-    public OrderView place(PlaceOrderRequest request) {
-        Long orderId = tx.execute(status -> reserve(request));
+    /** Result of placing an order: the order, and whether it is a replay of an earlier request. */
+    public record Placed(OrderView order, boolean replay) {
+    }
+
+    /**
+     * Mission 10: a request with a known Idempotency-Key returns the first order instead of a new one.
+     * The unique index decides when two attempts race each other.
+     */
+    public Placed place(PlaceOrderRequest request, String idempotencyKey) {
+        if (idempotencyKey != null) {
+            var existing = tx.execute(status -> orders.findByIdempotencyKey(idempotencyKey).map(OrderView::from));
+            if (existing.isPresent()) {
+                return new Placed(existing.get(), true);
+            }
+        }
+        try {
+            return new Placed(place(request, idempotencyKey, true), false);
+        } catch (DataIntegrityViolationException duplicate) {
+            if (idempotencyKey == null) throw duplicate;
+            return new Placed(tx.execute(status -> OrderView.from(orders.findByIdempotencyKey(idempotencyKey).orElseThrow())), true);
+        }
+    }
+
+    private OrderView place(PlaceOrderRequest request, String idempotencyKey, boolean unused) {
+        Long orderId = tx.execute(status -> reserve(request, idempotencyKey));
         Order pending = tx.execute(status -> orders.findById(orderId).orElseThrow());
         String paymentRef;
         try {
@@ -63,10 +87,10 @@ public class OrderService {
         });
     }
 
-    private Long reserve(PlaceOrderRequest request) {
+    private Long reserve(PlaceOrderRequest request, String idempotencyKey) {
         Dealer dealer = dealers.findById(request.dealerId())
                 .orElseThrow(() -> new NotFoundException("dealer " + request.dealerId()));
-        Order order = new Order(dealer);
+        Order order = new Order(dealer, idempotencyKey);
         for (PlaceOrderRequest.Line line : request.lines()) {
             Product product = products.findById(line.productId())
                     .orElseThrow(() -> new NotFoundException("product " + line.productId()));
@@ -75,7 +99,7 @@ public class OrderService {
             }
             order.addItem(new OrderItem(order, product, line.quantity()));
         }
-        return orders.save(order).getId();
+        return orders.saveAndFlush(order).getId();
     }
 
     private void release(Long orderId) {

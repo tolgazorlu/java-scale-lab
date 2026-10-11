@@ -38,7 +38,7 @@ class OrderFlowTests {
                 Long.class);
         when(payments.charge(anyLong(), anyLong())).thenReturn("pay_test");
 
-        OrderView view = orders.place(new PlaceOrderRequest(1L, List.of(new PlaceOrderRequest.Line(productId, 2))));
+        OrderView view = orders.place(new PlaceOrderRequest(1L, List.of(new PlaceOrderRequest.Line(productId, 2))), null).order();
 
         assertThat(view.status()).isEqualTo("PAID");
         assertThat(view.totalCents()).isEqualTo(2000);
