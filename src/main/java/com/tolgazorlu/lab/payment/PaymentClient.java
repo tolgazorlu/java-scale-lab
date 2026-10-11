@@ -5,7 +5,10 @@ import java.time.Duration;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -30,6 +33,10 @@ public class PaymentClient {
         this.http = builder.baseUrl(baseUrl).requestFactory(factory).build();
     }
 
+    // Mission 08: retry only transient failures (503, connection problems), at most twice,
+    // waiting ~100 ms then ~200 ms, with jitter so retries from many threads do not line up.
+    @Retryable(includes = {HttpServerErrorException.ServiceUnavailable.class, ResourceAccessException.class},
+            maxRetries = 2, delay = 100, multiplier = 2, jitter = 50, maxDelay = 1000)
     public String charge(Long dealerId, long amountCents) {
         ChargeResponse response = http.post()
                 .uri("/charges")
