@@ -1,5 +1,6 @@
 package com.tolgazorlu.lab.payment;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.Map;
@@ -19,8 +20,11 @@ import org.springframework.web.client.RestClient;
 public class PaymentClient {
 
     private final RestClient http;
+    private final CircuitBreaker circuit;
 
-    public PaymentClient(RestClient.Builder builder, @Value("${lab.payment.base-url}") String baseUrl) {
+    public PaymentClient(RestClient.Builder builder, @Value("${lab.payment.base-url}") String baseUrl,
+                         CircuitBreaker paymentCircuit) {
+        this.circuit = paymentCircuit;
         // HTTP/1.1 only: the JDK client otherwise tries an HTTP/2 upgrade that WireMock rejects.
         // LAB: note what is missing here. No connect timeout, no read timeout.
         // Mission 07: fail fast. Connect within 500 ms, answer within 2 s, or give up.
@@ -38,12 +42,13 @@ public class PaymentClient {
     @Retryable(includes = {HttpServerErrorException.ServiceUnavailable.class, ResourceAccessException.class},
             maxRetries = 2, delay = 100, multiplier = 2, jitter = 50, maxDelay = 1000)
     public String charge(Long dealerId, long amountCents) {
-        ChargeResponse response = http.post()
+        // When the circuit is open this throws CallNotPermittedException at once: no call, no retry.
+        return circuit.executeSupplier(() -> http.post()
                 .uri("/charges")
                 .body(Map.of("dealerId", dealerId, "amountCents", amountCents))
                 .retrieve()
-                .body(ChargeResponse.class);
-        return response.id();
+                .body(ChargeResponse.class)
+                .id());
     }
 
     record ChargeResponse(String id, String status) {
