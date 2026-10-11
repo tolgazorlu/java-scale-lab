@@ -73,7 +73,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 3,
@@ -123,7 +124,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 4,
@@ -200,7 +202,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 5,
@@ -250,7 +253,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 6,
@@ -340,7 +344,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 8,
@@ -365,7 +370,24 @@
       "fillOpacity": 5
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byFrameRefID",
+       "options": "B"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "short"
+       },
+       {
+        "id": "custom.axisPlacement",
+        "value": "right"
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
@@ -399,7 +421,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 9,
@@ -458,12 +481,13 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 10,
    "type": "timeseries",
-   "title": "Outbound HTTP (payment provider) p95 + rate",
+   "title": "Outbound HTTP (payment provider): p95 latency vs rate",
    "description": "",
    "datasource": {
     "type": "prometheus",
@@ -483,7 +507,24 @@
       "fillOpacity": 5
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byFrameRefID",
+       "options": "B"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "reqps"
+       },
+       {
+        "id": "custom.axisPlacement",
+        "value": "right"
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
@@ -517,7 +558,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 11,
@@ -589,7 +631,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 13,
@@ -639,7 +682,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 14,
@@ -698,7 +742,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 15,
@@ -770,7 +815,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   },
   {
    "id": 17,
@@ -820,7 +866,8 @@
       "uid": "prometheus"
      }
     }
-   ]
+   ],
+   "interval": "5s"
   }
  ]
 }
