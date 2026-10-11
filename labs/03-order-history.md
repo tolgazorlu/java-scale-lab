@@ -61,9 +61,10 @@ Restart the app (Flyway runs the migration on startup), then:
 
 ## 5. Still slow?
 
-If p95 got better but did not reach the 500 ms target, run `./lab topsql` again. Which queries
-are at the top now? How often are they called? Noticing this is enough, the fix is mission 04.
-Just write down the `calls` number.
+Be ready for a surprise: the `EXPLAIN` gets dramatically faster, the endpoint may barely move. Run
+`./lab topsql` again. Which queries are at the top now? How often are they called? Noticing this is
+enough, the fix is mission 04. Write down the `calls` number. Finding out that the query you fixed was
+not the bottleneck is a real result, not a failure.
 
 ## 6. Evidence
 
