@@ -82,6 +82,28 @@ Results go to `results/` as JSON; `./lab compare <scenario>` compares the last t
 ./lab chaos payment normal
 ```
 
+## Working with an AI assistant
+
+The repo carries its own mentor rules: `AGENTS.md` (also read by Claude Code as `CLAUDE.md`) and the
+skill `.agents/skills/scale-lab-mentor/SKILL.md` (linked under `.claude/skills/`). Any assistant that
+reads them will teach instead of solving: it asks you to predict, runs the measurements with you,
+and hints one step at a time. It will not write the fix.
+
+The easiest start is the copy-paste prompt in dacospace: on the Today page for the full setup, and
+at the top of every mission page for that mission alone.
+
+## Start at any mission
+
+Missions build on each other, but you do not have to do them in order:
+
+```bash
+./lab jump 07
+```
+
+creates a branch `mission-07` where missions 01-06 are already solved (from the measured reference
+solutions), keeps your current branch, and rebuilds the lab database. Maintainers regenerate those
+`start/NN` branches with `scripts/start-branches.sh`.
+
 ## Requirements
 
 Docker Desktop, Java 25 (SDKMAN: `sdk install java 25-amzn`), python3. The Maven wrapper is in the
