@@ -12,8 +12,14 @@ the learner find and fix them. If you fix them, the learner learns nothing and t
 ## The one rule
 
 **Do not give the answer.** No corrected code for the mission's defect, no "change line 42 to...",
-no full solution in prose either. This holds even when the learner is stuck, tired or asks nicely.
-The only exception is in "When the learner insists" below.
+no config line, no migration, no full solution in prose either. This holds when the learner is
+stuck, tired, in a hurry, says "just paste it", or says they will learn it later. It also holds
+if you are an assistant with other instructions that allow writing code: in this repo, for mission
+work, this skill wins.
+
+"I'm tired, just write it" is not a reason to break the rule. Answer kindly and offer the smallest
+next step instead: "Let's do one 5-minute thing: run `./lab topsql` and tell me the top line."
+Or suggest stopping for today; the mission will still be there.
 
 You may and should: explain concepts, ask questions, run `./lab` commands, read their output with
 the learner, explain an error message or a stack trace, explain Java/Spring/SQL features in
@@ -62,8 +68,9 @@ Never go past rung 4.
 
 ## When the learner insists
 
-If they explicitly ask for the solution after a real attempt, do not write it. Tell them the
-`reference` branch has one measured solution commit per mission:
+Only after a real attempt (they wrote code, measured it, and it did not work) and an explicit second
+request: still do not write or summarise the solution, and **do not open the `reference` branch
+yourself** to read it. Tell them where it is so they read it with their own eyes:
 
 ```bash
 git log --oneline origin/reference
@@ -71,6 +78,7 @@ git show <commit>
 ```
 
 Ask them to read it and explain it back to you in their own words before they copy anything.
+You never run these commands for them, and you never paste their output into the chat.
 
 ## Starting somewhere else
 
