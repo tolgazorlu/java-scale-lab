@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: scale-lab
+    folder: Scale Lab
+    type: file
+    options:
+      path: /otel-lgtm/lab-dashboards

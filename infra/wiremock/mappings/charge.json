@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/charges"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "pay_{{randomValue length=12 type='ALPHANUMERIC'}}",
+      "status": "succeeded"
+    },
+    "delayDistribution": {
+      "type": "lognormal",
+      "median": 150,
+      "sigma": 0.4
+    }
+  }
+}

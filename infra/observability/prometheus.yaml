@@ -1,0 +1,18 @@
+# Prometheus inside the grafana/otel-lgtm container.
+# Scrapes the app running on the host (and later: extra instances behind the load balancer).
+global:
+  scrape_interval: 5s
+  scrape_native_histograms: true
+otlp:
+  keep_identifying_resource_attributes: true
+  promote_resource_attributes: [service.instance.id, service.name]
+scrape_configs:
+  - job_name: scale-lab
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["host.docker.internal:4180"]
+        labels: { instance: app-1 }
+      - targets: ["host.docker.internal:4190"]
+        labels: { instance: app-2 }
+      - targets: ["host.docker.internal:4191"]
+        labels: { instance: app-3 }

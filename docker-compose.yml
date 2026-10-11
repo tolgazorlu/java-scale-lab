@@ -1,0 +1,60 @@
+# Local infrastructure for the lab. Ports: cortex playbooks/local-ports.md, block 4180-4189.
+#   4180 app (runs on the host with ./lab run)
+#   4181 nginx load balancer        (profile: scale)
+#   4182 Grafana                    http://localhost:4182
+#   4183 Prometheus                 http://localhost:4183
+#   4184 Postgres
+#   4185 Redis                      (profile: cache)
+#   4186 Kafka                      (profile: events)
+#   4188 OTLP http (traces, logs)
+#   4189 fake payment provider (WireMock)
+name: scale-lab
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: lab
+      POSTGRES_USER: lab
+      POSTGRES_PASSWORD: lab
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_stat_statements
+      - -c
+      - max_connections=200
+    ports: ["4184:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./infra/seed.sql:/seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lab -d lab"]
+      interval: 2s
+      retries: 30
+
+  payment:
+    image: wiremock/wiremock:3.13.0
+    command: ["--global-response-templating", "--disable-banner", "--no-request-journal"]
+    ports: ["4189:8080"]
+    volumes:
+      - ./infra/wiremock:/home/wiremock:ro
+
+  # Grafana + Prometheus + Tempo (traces) + Loki (logs) + OTel collector in one container.
+  lgtm:
+    image: grafana/otel-lgtm:latest
+    ports:
+      - "4182:3000"
+      - "4183:9090"
+      - "4188:4318"
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    volumes:
+      - ./infra/observability/prometheus.yaml:/otel-lgtm/prometheus.yaml:ro
+      - ./infra/observability/dashboards:/otel-lgtm/lab-dashboards:ro
+      - ./infra/observability/dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/lab.yaml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  pgdata:
