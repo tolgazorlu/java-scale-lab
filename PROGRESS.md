@@ -1,34 +1,34 @@
-# İlerleme
+# Progress
 
-`./lab today` bu tablodaki ilk `todo` satırını açar. `./lab done NN "tek cümle"` satırı kapatır
-ve aşağıdaki günlüğe ekler. Görev dosyası henüz yazılmadıysa Hermes'e
-"scale lab: sıradaki görevi yaz" de.
+`./lab today` opens the first `todo` row. `./lab done NN "one sentence"` closes it and appends
+your sentence to the log below. dacospace (http://localhost:4120/lab) reads and writes this file
+too. If a mission file is not written yet, ask Hermes: "scale lab: write the next mission".
 
-| # | Görev | Kavram | Durum | Tarih |
+| # | Mission | Concept | Status | Date |
 |---|---|---|---|---|
-| 01 | Gözlerini aç: dashboard turu | RED, p50/p95/p99, ortalama neden yalan söyler | todo | - |
-| 02 | Sabah 09:00: kırılma noktası | Little's Law, connection pool, saturation | todo | - |
-| 03 | Bayinin sipariş geçmişi | EXPLAIN, seq scan, index, Flyway migration | todo | - |
-| 04 | 1 istek, 61 sorgu | N+1, Hibernate lazy loading, fetch join | todo | - |
-| 05 | Ödeme yavaşlayınca her şey yavaşlar | transaction sınırı, pool tükenmesi | todo | - |
-| 06 | Son 10 ürün | race condition, lost update, atomic UPDATE, optimistic lock | todo | - |
-| 07 | Sağlayıcı cevap vermiyor | timeout (connect/read), fail fast | todo | - |
-| 08 | Tekrar dene ama akıllıca | retry, exponential backoff, jitter (Resilience4j) | todo | - |
-| 09 | Devreyi kes | circuit breaker, bulkhead, fallback | todo | - |
-| 10 | Aynı sipariş iki kez | idempotency key, unique constraint | todo | - |
-| 11 | Fiyat listesi cache'i | Redis, cache-aside, TTL | todo | - |
-| 12 | Cache süresi doldu, herkes DB'ye koştu | thundering herd, request coalescing | todo | - |
-| 13 | Bir bayi herkesi yavaşlatıyor | rate limiting, token bucket, noisy neighbor | todo | - |
-| 14 | 3 instance + load balancer | stateless service, horizontal scaling, nginx | todo | - |
+| 01 | Open your eyes: a dashboard tour | RED, p50/p95/p99, why the average lies | todo | - |
+| 02 | 09:00 rush: the breaking point | Little's Law, connection pool, saturation | todo | - |
+| 03 | The dealer's order history | EXPLAIN, seq scan, index, Flyway migration | todo | - |
+| 04 | 1 request, 61 queries | N+1, Hibernate lazy loading, fetch join | todo | - |
+| 05 | Slow payments slow down everything | transaction boundary, pool exhaustion | todo | - |
+| 06 | The last 10 items | race condition, lost update, atomic UPDATE, optimistic lock | todo | - |
+| 07 | The provider stops answering | timeouts (connect/read), fail fast | todo | - |
+| 08 | Retry, but wisely | retry, exponential backoff, jitter (Resilience4j) | todo | - |
+| 09 | Open the circuit | circuit breaker, bulkhead, fallback | todo | - |
+| 10 | The same order twice | idempotency key, unique constraint | todo | - |
+| 11 | Price list cache | Redis, cache-aside, TTL | todo | - |
+| 12 | Cache expired, everyone rushed the DB | thundering herd, request coalescing | todo | - |
+| 13 | One dealer slows down everyone | rate limiting, token bucket, noisy neighbor | todo | - |
+| 14 | 3 instances + a load balancer | stateless service, horizontal scaling, nginx | todo | - |
 | 15 | Virtual threads | Java 21+ Loom, thread-per-request, pinning | todo | - |
-| 16 | Sipariş event'i kaybolmasın | dual write, outbox pattern, Kafka | todo | - |
-| 17 | Consumer çöktü | at-least-once, consumer idempotency, DLQ | todo | - |
-| 18 | SLO ve alarm | SLI/SLO, error budget, burn rate alert | todo | - |
-| 19 | Neden yavaş: flame graph | profiling (Pyroscope), allocation, GC | todo | - |
-| 20 | Okumaları replica'ya | read replica, replication lag, read-your-writes | todo | - |
-| 21 | 400 bin → 40 milyon sipariş | partitioning, archive, vacuum | todo | - |
-| 22 | Chaos günü | instance öldürme, DB restart, graceful shutdown | todo | - |
-| 23 | Kapasite raporu | capacity planning, darboğaz zinciri | todo | - |
+| 16 | Don't lose the order event | dual write, outbox pattern, Kafka | todo | - |
+| 17 | The consumer crashed | at-least-once, consumer idempotency, DLQ | todo | - |
+| 18 | SLOs and alerts | SLI/SLO, error budget, burn rate alert | todo | - |
+| 19 | Why is it slow: flame graphs | profiling (Pyroscope), allocation, GC | todo | - |
+| 20 | Reads go to a replica | read replica, replication lag, read-your-writes | todo | - |
+| 21 | 400k → 40M orders | partitioning, archiving, vacuum | todo | - |
+| 22 | Chaos day | killing instances, DB restart, graceful shutdown | todo | - |
+| 23 | Capacity report | capacity planning, bottleneck chain | todo | - |
 
-## Günlük
+## Log
 

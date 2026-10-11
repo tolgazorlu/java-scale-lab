@@ -1,79 +1,90 @@
 # Scale Lab
 
-Java öğrenme laboratuvarı. Gerçekçi bir bayi sipariş sistemi, gerçek yük, gerçek monitoring.
-Sistem **bilerek** saf yazıldı: içinde index eksiği, N+1, race condition, transaction içinde dış
-çağrı, timeout'suz HTTP client var. Her görev birini ölçer, düzeltir, düzeldiğini kanıtlar.
+A Java learning lab. A realistic dealer ordering system, real load, real monitoring.
+The system is **deliberately** naive: missing indexes, N+1 queries, a race condition, an external
+call inside a database transaction, an HTTP client with no timeouts. Each mission measures one of
+them, fixes it, and proves the fix.
 
-Ezber yok: her görev **tahmin et → ölç → 4 adım → değiştir → tekrar ölç → tek cümle** döngüsüdür.
+No memorizing: every mission is **predict → measure → 4 steps → change → measure again → one sentence**.
 
-![Scale Lab dashboard, 70 sipariş/sn altında](docs/dashboard.png)
+The daily flow (lesson first, then the lab) lives in **dacospace** (http://localhost:4120), which
+reads this repo, runs `./lab` commands with live output and embeds the Grafana panels. Everything
+also works from the terminal.
 
-## Günlük döngü
+![Scale Lab dashboard under 70 orders/s](docs/dashboard.png)
+
+## Daily loop
 
 ```bash
-./lab today              # bugünün görevi
-./lab up && ./lab run    # altyapı + uygulama (run ayrı terminalde)
-# ... görevi yap ...
-./lab done 03 "index'in kolon sırası sorgunun WHERE + ORDER BY sırasını izlemeli"
+./lab today              # today's mission
+./lab up && ./lab run    # infrastructure + app (run in a separate terminal)
+# ... do the mission ...
+./lab done 03 "an index's column order must follow the query's WHERE, then ORDER BY"
 git add -A && git commit -m "perf: ..."
 ```
 
-`./lab help` bütün komutları listeler.
+`./lab help` lists every command.
 
-## Ne var
+## What's inside
 
-| Parça | Ne işe yarar | Adres |
+| Part | Purpose | Address |
 |---|---|---|
-| Spring Boot 4.1 + Java 25 | uygulama | http://localhost:4180 |
-| Postgres 18 + pg_stat_statements | veri, yavaş sorgu analizi | localhost:4184 |
-| Grafana + Prometheus + Tempo + Loki + Pyroscope | metrik, trace, log, profil | http://localhost:4182 |
-| WireMock | sahte ödeme sağlayıcısı, yavaşlatılabilir, düşürülebilir | localhost:4189 |
-| k6 | yük testi (Docker içinde) | `./lab load ...` |
+| Spring Boot 4.1 + Java 25 | the app | http://localhost:4180 |
+| Postgres 18 + pg_stat_statements | data, slow query analysis | localhost:4184 |
+| Grafana + Prometheus + Tempo + Loki + Pyroscope | metrics, traces, logs, profiles | http://localhost:4182 |
+| WireMock | fake payment provider, can be slowed down or killed | localhost:4189 |
+| k6 | load tests (in Docker) | `./lab load ...` |
 
-Grafana'da hazır dashboard: **Scale Lab** (RED, percentile'lar, connection pool, Tomcat thread,
-dış HTTP, JVM, k6). Tempo'da her isteğin trace'i var.
+Grafana ships a ready dashboard: **Scale Lab** (RED, percentiles, connection pool, Tomcat threads,
+outbound HTTP, JVM, k6). Every request is traced in Tempo.
 
-Sonraki görevlerde açılan profiller: `cache` (Redis), `events` (Kafka), `scale` (nginx + 3 instance).
+Compose profiles that later missions unlock: `cache` (Redis), `events` (Kafka), `scale` (nginx + 3 instances).
+
+## Content
+
+- `lessons/NN-*.md`: the 10-15 minute reading for mission NN (the concept).
+- `labs/NN-*.md`: the hands-on mission.
+- `PROGRESS.md`: the roadmap (23 missions) and your one-line log.
 
 ## Domain
 
-- **dealers** (2.000 bayi), **products** (20.000 ürün, ilk 20'si kampanya ürünü), **orders**
-  (400 bin), **order_items** (1,2 milyon)
-- `GET /api/products?category=...` fiyat listesi
+- **dealers** (2,000), **products** (20,000, the first 20 are campaign products), **orders**
+  (400k), **order_items** (1.2M)
+- `GET /api/products?category=...` price list
 - `GET /api/products/{id}`
-- `POST /api/orders` stok düş, ödeme al, sipariş yaz
-- `GET /api/dealers/{id}/orders` son siparişler
+- `POST /api/orders` lower stock, charge payment, write the order
+- `GET /api/dealers/{id}/orders` recent orders
 
-## Yük senaryoları (`load/`)
+## Load scenarios (`load/`)
 
-| Senaryo | Ne simüle eder |
+| Scenario | Simulates |
 |---|---|
-| `smoke` | her endpoint cevap veriyor mu |
-| `morning-rush [RPS]` | 09:00, bütün bayiler fiyat listesini açıyor |
-| `orders [RPS]` | sabit sipariş trafiği, %80 kampanya ürünü (hot rows) |
-| `dealer-history [RPS]` | "son siparişlerim" ekranı |
-| `last-item` (`./lab race`) | 100 bayi aynı anda son 10 ürünü almaya çalışıyor |
+| `smoke` | does every endpoint answer |
+| `morning-rush [RPS]` | 09:00, every dealer opens the price list |
+| `orders [RPS]` | steady order traffic, 80% campaign products (hot rows) |
+| `dealer-history [RPS]` | the "my recent orders" screen |
+| `last-item` (`./lab race`) | 100 dealers try to buy the last 10 items at once |
 
-Sonuçlar `results/` altına JSON olarak yazılır, `./lab compare <senaryo>` son iki koşuyu kıyaslar.
+Results go to `results/` as JSON; `./lab compare <scenario>` compares the last two runs.
 
-## Kaos
+## Chaos
 
 ```bash
-./lab chaos payment slow        # 2 sn gecikme
-./lab chaos payment very-slow   # 9 sn
-./lab chaos payment hang        # 120 sn
+./lab chaos payment slow        # 2 s delay
+./lab chaos payment very-slow   # 9 s
+./lab chaos payment hang        # 120 s
 ./lab chaos payment errors      # 503
 ./lab chaos payment down        # connection reset
 ./lab chaos payment normal
 ```
 
-## Gereksinimler
+## Requirements
 
-Docker Desktop, Java 25 (SDKMAN), Maven wrapper repo'da. Portlar cortex
-`playbooks/local-ports.md` 4180-4189 bloğunda.
+Docker Desktop, Java 25 (SDKMAN), the Maven wrapper is in the repo. Ports: cortex
+`playbooks/local-ports.md`, block 4180-4189.
 
-## Kurallar
+## Rules
 
-- Bir düzeltmeyi ölçmeden "düzeldi" deme. `results/` kanıttır.
-- Şema değişikliği sadece Flyway migration ile.
-- Her görev tek commit ya da birkaç küçük commit. İngilizce, `type: subject`.
+- Don't call a fix "fixed" without measuring it. `results/` is the evidence.
+- Schema changes only through Flyway migrations.
+- One mission = one commit or a few small ones. English, `type: subject`.
