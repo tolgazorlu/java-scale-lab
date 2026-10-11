@@ -1,0 +1,22 @@
+name: ci
+on:
+  push:
+    branches: [main, reference]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+      - name: Unit and Testcontainers tests
+        run: ./mvnw -B -q test
+      - name: Lab content parses
+        run: |
+          for f in labs/[0-9][0-9]-*.md; do head -1 "$f" | grep -Eq '^# Mission [0-9]{2} · ' || { echo "bad heading: $f"; exit 1; }; done
+          for f in lessons/[0-9][0-9]-*.md; do head -1 "$f" | grep -Eq '^# Lesson [0-9]{2} · ' || { echo "bad heading: $f"; exit 1; }; done
