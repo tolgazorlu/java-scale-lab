@@ -6,6 +6,8 @@ Sistem **bilerek** saf yazıldı: içinde index eksiği, N+1, race condition, tr
 
 Ezber yok: her görev **tahmin et → ölç → 4 adım → değiştir → tekrar ölç → tek cümle** döngüsüdür.
 
+![Scale Lab dashboard, 70 sipariş/sn altında](docs/dashboard.png)
+
 ## Günlük döngü
 
 ```bash
