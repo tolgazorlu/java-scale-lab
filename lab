@@ -44,13 +44,14 @@ ${c_bold}Scale Lab${c_off}
     ./lab load <scenario> [RPS] run a k6 load test, save results/…json
                                 scenarios: $(ls load | grep -v lib.js | sed 's/\.js//' | tr '\n' ' ')
     ./lab race                  100 dealers buy the last 10 items at the same moment
+    ./lab double                50 orders, each sent twice with the same Idempotency-Key
     ./lab compare <scenario>    compare the last two runs of a scenario
     ./lab sql "<query>"         run SQL against the lab database
     ./lab explain "<query>"     EXPLAIN (ANALYZE, BUFFERS) a query
     ./lab topsql                slowest queries from pg_stat_statements
 
   Break things
-    ./lab chaos payment <normal|slow|very-slow|hang|errors|down>
+    ./lab chaos payment <normal|slow|very-slow|hang|flaky|errors|down>
 
   URLs
     App         $APP_URL
@@ -131,6 +132,12 @@ print(f"  failed    {failed.get('value', 0) * 100:>7.2f}%")
 for k in ("med", "p(90)", "p(95)", "max"):
     if k in dur:
         print(f"  {k:<8}  {dur[k]:>8.1f} ms")
+subs = sorted(k for k in d if k.startswith("http_req_duration{") and "expected_response" not in k)
+for k in subs:
+    name = k[len("http_req_duration{"):-1].replace("name:", "")
+    fails = d.get("http_req_failed{" + k[len("http_req_duration{"):], {}).get("value")
+    extra = f"   failed {fails * 100:.1f}%" if fails is not None else ""
+    print(f"  p95 {name:<14} {d[k].get('p(95)', 0):>8.1f} ms{extra}")
 for name in ("orders_accepted", "orders_rejected", "dropped_iterations"):
     if name in d:
         print(f"  {name:<18} {d[name].get('count', 0)}")
@@ -172,9 +179,20 @@ cmd_race() {
   if [ "$((after - before))" = "10" ] && [ "$stock" = "0" ]; then say "${c_grn}correct${c_off}"; else say "${c_red}WRONG: the system sold stock it did not have, or lost updates${c_off}"; fi
 }
 
+cmd_double() {
+  app_up || die "app is not running (./lab run)"
+  local before; before=$(psql_lab -tAc "SELECT count(*) FROM orders WHERE dealer_id = 2000")
+  cmd_load double-submit
+  local after; after=$(psql_lab -tAc "SELECT count(*) FROM orders WHERE dealer_id = 2000")
+  say ""
+  say "${c_bold}double submit result${c_off}: 50 orders, each sent twice with the same Idempotency-Key"
+  say "  orders written : $((after - before))   (correct: 50)"
+  if [ "$((after - before))" = "50" ]; then say "${c_grn}correct${c_off}"; else say "${c_red}WRONG: retries created duplicate orders${c_off}"; fi
+}
+
 cmd_chaos() {
   local target="${1:-}" mode="${2:-}"
-  [ "$target" = "payment" ] || die "usage: ./lab chaos payment <normal|slow|very-slow|hang|errors|down>"
+  [ "$target" = "payment" ] || die "usage: ./lab chaos payment <normal|slow|very-slow|hang|flaky|errors|down>"
   curl -sf -X POST "$PAY_ADMIN/mappings/reset" >/dev/null
   curl -sf -X POST "$PAY_ADMIN/settings" -H 'Content-Type: application/json' -d '{"fixedDelay":0}' >/dev/null
   case "$mode" in
@@ -182,6 +200,15 @@ cmd_chaos() {
     slow)      curl -sf -X POST "$PAY_ADMIN/settings" -H 'Content-Type: application/json' -d '{"fixedDelay":2000}' >/dev/null ;;
     very-slow) curl -sf -X POST "$PAY_ADMIN/settings" -H 'Content-Type: application/json' -d '{"fixedDelay":9000}' >/dev/null ;;
     hang)      curl -sf -X POST "$PAY_ADMIN/settings" -H 'Content-Type: application/json' -d '{"fixedDelay":120000}' >/dev/null ;;
+    flaky)     # every third call fails with 503 (a WireMock scenario cycling through three states)
+               for st in "Started:s2:503" "s2:s3:200" "s3:Started:200"; do
+                 IFS=: read -r from to code <<<"$st"
+                 if [ "$code" = 503 ]; then resp='{"status":503,"body":"provider overloaded"}'
+                 else resp='{"status":200,"headers":{"Content-Type":"application/json"},"jsonBody":{"id":"pay_{{randomValue length=12 type='"'"'ALPHANUMERIC'"'"'}}","status":"succeeded"},"transformers":["response-template"],"delayDistribution":{"type":"lognormal","median":150,"sigma":0.4}}'; fi
+                 curl -sf -X POST "$PAY_ADMIN/mappings" -H 'Content-Type: application/json' \
+                   -d '{"priority":1,"scenarioName":"flaky","requiredScenarioState":"'"$from"'","newScenarioState":"'"$to"'","request":{"method":"POST","url":"/charges"},"response":'"$resp"'}' >/dev/null
+               done
+               curl -sf -X POST "$PAY_ADMIN/scenarios/reset" >/dev/null ;;
     errors)    curl -sf -X POST "$PAY_ADMIN/mappings" -H 'Content-Type: application/json' \
                  -d '{"priority":1,"request":{"method":"POST","url":"/charges"},"response":{"status":503,"body":"provider overloaded"}}' >/dev/null ;;
     down)      curl -sf -X POST "$PAY_ADMIN/mappings" -H 'Content-Type: application/json' \
@@ -244,6 +271,7 @@ case "${1:-help}" in
   load)     shift; cmd_load "$@" ;;
   compare)  shift; cmd_compare "$@" ;;
   race)     cmd_race ;;
+  double)   cmd_double ;;
   chaos)    shift; cmd_chaos "$@" ;;
   status)   cmd_status ;;
   today)    cmd_today ;;
