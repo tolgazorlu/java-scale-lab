@@ -24,7 +24,7 @@ for ((nn = 2; nn <= written; nn++)); do
   git switch -q -C "$name" main
   for ((i = 0; i < solved; i++)); do
     [ -n "${fixes[$i]:-}" ] || { echo "missing reference commit for mission $((i + FIRST_SOLVED))"; exit 1; }
-    git cherry-pick -q --allow-empty "${fixes[$i]}" >/dev/null
+    git cherry-pick --allow-empty "${fixes[$i]}" >/dev/null
   done
   echo "$name  $(git log -1 --format=%s)"
 done
