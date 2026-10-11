@@ -30,6 +30,8 @@ ${c_bold}Scale Lab${c_off}
     ./lab today                 show today's mission
     ./lab status                progress table
     ./lab done <NN> "<note>"    mark mission NN done with a one-line takeaway
+    ./lab jump <NN>             start at mission NN: new branch with earlier missions solved,
+                                fresh database (keeps your current branch)
 
   Infrastructure
     ./lab up [profile...]       start Postgres, Grafana stack, fake payment provider
@@ -70,6 +72,36 @@ cmd_up() {
 
 cmd_down()  { docker compose --profile '*' down; }
 cmd_reset() { docker compose --profile '*' down -v; say "database volume deleted. Run ./lab up, ./lab run, ./lab seed."; }
+
+# Start the app in the background just long enough for Flyway to create the tables, then seed.
+fresh_database() {
+  cmd_reset >/dev/null
+  cmd_up
+  say "starting the app once so Flyway creates the tables..."
+  ./mvnw -q spring-boot:run >/tmp/scale-lab-jump.log 2>&1 &
+  local pid=$! i
+  for i in $(seq 1 90); do app_up && break; sleep 2; done
+  app_up || { kill "$pid" 2>/dev/null; die "app did not start, see /tmp/scale-lab-jump.log"; }
+  cmd_seed
+  pkill -P "$pid" 2>/dev/null; kill "$pid" 2>/dev/null; wait "$pid" 2>/dev/null || true
+}
+
+# Begin at mission NN without doing the earlier ones: a branch where they are already solved.
+cmd_jump() {
+  local nn; nn=$(printf '%02d' "$((10#${1:?usage: ./lab jump <NN>}))")
+  [ -z "$(git status --porcelain --untracked-files=no)" ] \
+    || die "you have uncommitted changes. Commit them first (your work stays on its branch): git commit -am wip"
+  app_up && die "the app is running. Stop it first (Ctrl-C, or Stop in dacospace)."
+  say "fetching start/$nn..."
+  git fetch -q origin "start/$nn" || die "no start/$nn branch yet. Is mission $nn written? (./lab status)"
+  git switch -q -C "mission-$nn" FETCH_HEAD
+  say "on branch mission-$nn: missions before $nn are solved, mission $nn is still broken."
+  say "your previous branch is untouched (git branch to see it)."
+  say "the database schema differs per mission, so it is rebuilt now (about 2 minutes)."
+  fresh_database
+  say ""
+  say "${c_bold}ready${c_off}. Read lessons/$nn-*.md, then labs/$nn-*.md. Start the app: ./lab run"
+}
 
 cmd_seed() {
   app_up || die "start the app first (./lab run) so Flyway creates the tables."
@@ -276,5 +308,6 @@ case "${1:-help}" in
   status)   cmd_status ;;
   today)    cmd_today ;;
   done)     shift; cmd_done "$@" ;;
+  jump)     shift; cmd_jump "$@" ;;
   *) die "unknown command: $1 (./lab help)" ;;
 esac
