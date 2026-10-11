@@ -42,9 +42,10 @@ Compose profiles that later missions unlock: `cache` (Redis), `events` (Kafka), 
 
 ## Content
 
-- `lessons/NN-*.md`: the 10-15 minute reading for mission NN (the concept).
+- `lessons/NN-*.md`: the 10-15 minute reading for mission NN (the concept). All 23 are written.
 - `labs/NN-*.md`: the hands-on mission.
-- `PROGRESS.md`: the roadmap (23 missions) and your one-line log.
+- `PROGRESS.md`: the roadmap (23 missions) and your one-line log. Missions 01-10 are written and run
+  on the current infrastructure; 11-23 need Redis, Kafka and nginx, which arrive with their missions.
 
 ## Domain
 
@@ -64,6 +65,8 @@ Compose profiles that later missions unlock: `cache` (Redis), `events` (Kafka), 
 | `orders [RPS]` | steady order traffic, 80% campaign products (hot rows) |
 | `dealer-history [RPS]` | the "my recent orders" screen |
 | `last-item` (`./lab race`) | 100 dealers try to buy the last 10 items at once |
+| `mixed [RPS]` | 30 price list requests/s plus RPS orders/s, p95 per endpoint |
+| `double-submit` (`./lab double`) | 50 orders, each sent twice with the same Idempotency-Key |
 
 Results go to `results/` as JSON; `./lab compare <scenario>` compares the last two runs.
 
@@ -73,6 +76,7 @@ Results go to `results/` as JSON; `./lab compare <scenario>` compares the last t
 ./lab chaos payment slow        # 2 s delay
 ./lab chaos payment very-slow   # 9 s
 ./lab chaos payment hang        # 120 s
+./lab chaos payment flaky       # every third call returns 503
 ./lab chaos payment errors      # 503
 ./lab chaos payment down        # connection reset
 ./lab chaos payment normal
@@ -80,8 +84,18 @@ Results go to `results/` as JSON; `./lab compare <scenario>` compares the last t
 
 ## Requirements
 
-Docker Desktop, Java 25 (SDKMAN), the Maven wrapper is in the repo. Ports: cortex
-`playbooks/local-ports.md`, block 4180-4189.
+Docker Desktop, Java 25 (SDKMAN: `sdk install java 25-amzn`), python3. The Maven wrapper is in the
+repo. The easiest setup is through dacospace: `pnpm run setup` there checks all of this and clones this
+repo next to it.
+
+Ports: app 4180, Grafana 4182, Prometheus 4183, Postgres 4184, OTLP 4188, fake payment provider 4189,
+extra app instances 4190-4191 (later missions). The app port can be moved with `LAB_APP_PORT`.
+
+## Reference solutions
+
+The `reference` branch has one commit per solved mission (03-10 so far), each measured on a real
+machine. Open it only after you finished a mission, to compare approaches. `git diff main reference --
+src/` shows all of it at once, which is exactly what you should not do on day one.
 
 ## Rules
 
