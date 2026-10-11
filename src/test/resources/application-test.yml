@@ -1,0 +1,11 @@
+management:
+  tracing:
+    export:
+      enabled: false
+  opentelemetry:
+    logging:
+      export:
+        enabled: false
+lab:
+  payment:
+    base-url: http://localhost:1
