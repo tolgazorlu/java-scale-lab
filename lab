@@ -225,11 +225,11 @@ cmd_status() { sed -n '/^| #/,/^$/p' PROGRESS.md; }
 cmd_today() {
   local nn
   nn=$(awk -F'|' '/^\| [0-9][0-9] /{ gsub(/ /,"",$2); gsub(/ /,"",$5); if ($5 != "done") { print $2; exit } }' PROGRESS.md)
-  [ -n "$nn" ] || { say "all written missions are done. Ask Hermes: 'scale lab: write the next mission'"; return; }
+  [ -n "$nn" ] || { say "all written missions are done. Run git pull for new ones."; return; }
   local f; f=$(ls labs/"$nn"-*.md 2>/dev/null | head -1 || true)
   if [ -z "$f" ]; then
     say "mission $nn is on the roadmap but not written yet."
-    say "Ask Hermes: 'scale lab: write mission $nn'"
+    say "Run git pull later; missions ship after they are measured."
     return
   fi
   if command -v glow >/dev/null; then glow "$f"; else cat "$f"; fi
