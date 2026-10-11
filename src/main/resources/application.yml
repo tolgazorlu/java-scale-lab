@@ -1,6 +1,6 @@
 # Ports follow cortex playbooks/local-ports.md (block 4180-4189).
 server:
-  port: ${PORT:4180}
+  port: ${LAB_APP_PORT:4180}
   tomcat:
     # Publishes Tomcat thread metrics (busy / max threads) to Micrometer.
     mbeanregistry:
