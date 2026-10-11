@@ -24,6 +24,8 @@ spring:
       hibernate:
         # LAB: turn this on to see every SQL statement Hibernate sends.
         show_sql: false
+        # Mission 04: load lazy collections and associations for up to 50 parents in one IN query.
+        default_batch_fetch_size: 50
   flyway:
     enabled: true
 
