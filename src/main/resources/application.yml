@@ -1,6 +1,10 @@
 # Ports follow cortex playbooks/local-ports.md (block 4180-4189).
 server:
   port: ${PORT:4180}
+  tomcat:
+    # Publishes Tomcat thread metrics (busy / max threads) to Micrometer.
+    mbeanregistry:
+      enabled: true
 
 spring:
   application:
@@ -38,6 +42,7 @@ management:
       percentiles-histogram:
         http.server.requests: true
         http.client.requests: true
+        hikaricp.connections.acquire: true
     tags:
       application: scale-lab
       instance: ${INSTANCE:local}
