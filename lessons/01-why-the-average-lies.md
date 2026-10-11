@@ -1,6 +1,6 @@
 # Lesson 01 · Why the average lies
 
-**Reading time:** 12 min · **Concept:** RED metrics, percentiles (p50, p95, p99)
+**Reading time:** 10 min · **Concept:** RED metrics, percentiles (p50, p95, p99)
 **Mission:** 01
 
 ## The problem

@@ -1,6 +1,6 @@
 # Lesson 02 · Ten checkouts and a queue
 
-**Reading time:** 14 min · **Concept:** Little's Law, connection pools, saturation
+**Reading time:** 10 min · **Concept:** Little's Law, connection pools, saturation
 **Mission:** 02
 
 ## The problem

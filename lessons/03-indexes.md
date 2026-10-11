@@ -1,6 +1,6 @@
 # Lesson 03 · Finding one card in a deck
 
-**Reading time:** 13 min · **Concept:** seq scan, B-tree index, column order, EXPLAIN
+**Reading time:** 10 min · **Concept:** seq scan, B-tree index, column order, EXPLAIN
 **Mission:** 03
 
 ## The problem
