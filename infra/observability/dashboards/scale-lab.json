@@ -46,18 +46,23 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": []
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -97,18 +102,23 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": []
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -148,18 +158,23 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": []
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -226,18 +241,23 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": []
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -290,18 +310,23 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": []
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -368,6 +393,10 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": [
@@ -391,12 +420,13 @@
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -445,18 +475,23 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": []
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -505,6 +540,10 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": [
@@ -528,12 +567,13 @@
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -595,18 +635,23 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": []
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -655,18 +700,23 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": []
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -706,18 +756,23 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": []
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -779,18 +834,23 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": []
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
@@ -839,18 +899,23 @@
      "custom": {
       "lineWidth": 2,
       "fillOpacity": 5
+     },
+     "color": {
+      "mode": "shades",
+      "fixedColor": "text"
      }
     },
     "overrides": []
    },
    "options": {
     "legend": {
-     "displayMode": "table",
+     "displayMode": "list",
      "placement": "bottom",
      "calcs": [
       "lastNotNull",
       "max"
-     ]
+     ],
+     "showLegend": true
     },
     "tooltip": {
      "mode": "multi"
