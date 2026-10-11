@@ -1,0 +1,60 @@
+# Ports follow cortex playbooks/local-ports.md (block 4180-4189).
+server:
+  port: ${PORT:4180}
+
+spring:
+  application:
+    name: scale-lab
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:4184}/lab
+    username: lab
+    password: lab
+    hikari:
+      # LAB: connection pool size. Default is 10. Leave it until the pool lab.
+      maximum-pool-size: 10
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        # LAB: turn this on to see every SQL statement Hibernate sends.
+        show_sql: false
+  flyway:
+    enabled: true
+
+lab:
+  payment:
+    base-url: ${PAYMENT_URL:http://localhost:4189}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    distribution:
+      # Needed for p95/p99 in Grafana (histogram buckets).
+      percentiles-histogram:
+        http.server.requests: true
+        http.client.requests: true
+    tags:
+      application: scale-lab
+      instance: ${INSTANCE:local}
+  tracing:
+    sampling:
+      probability: 1.0
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://${OTEL_HOST:localhost}:4188/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://${OTEL_HOST:localhost}:4188/v1/logs
+  otlp:
+    metrics:
+      export:
+        # Metrics are pulled by Prometheus from /actuator/prometheus instead.
+        enabled: false
