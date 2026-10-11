@@ -237,10 +237,10 @@ cmd_charges() {
   curl -sf "$PAY_ADMIN/stats" | python3 -c '
 import json, sys
 s = json.load(sys.stdin)
-print(f"  charge requests received     {s[\"requests\"]}   (without Idempotency-Key: {s[\"requests_without_key\"]})")
-print(f"  answered from an earlier key {s[\"replayed_by_key\"]}")
-print(f"  charges made (money taken)   {s[\"charges\"]}   ({s[\"amount_cents\"] / 100:,.2f})")
-print(f"  orders charged more than once {s[\"references_charged_more_than_once\"]}")
+print(f"  charge requests received     {s["requests"]}   (without Idempotency-Key: {s["requests_without_key"]})")
+print(f"  answered from an earlier key {s["replayed_by_key"]}")
+print(f"  charges made (money taken)   {s["charges"]}   ({s["amount_cents"] / 100:,.2f})")
+print(f"  orders charged more than once {s["references_charged_more_than_once"]}")
 '
   say "${c_bold}orders${c_off} created in the same window"
   psql_lab -tAc "SELECT status, count(*), coalesce(sum(total_cents), 0) / 100.0 FROM orders WHERE created_at >= '$(cat "$since_file")' GROUP BY status ORDER BY status" \
@@ -250,7 +250,7 @@ print(f"  orders charged more than once {s[\"references_charged_more_than_once\"
 cmd_chaos() {
   local target="${1:-}" mode="${2:-}"
   [ "$target" = "payment" ] || die "usage: ./lab chaos payment <normal|slow|very-slow|hang|flaky|slow-ack|errors|down>"
-  curl -sf -X POST "$PAY_ADMIN/mode" -H 'Content-Type: application/json' -d "{\"mode\":\"$mode\"}" >/dev/null \
+  curl -sf -X POST "$PAY_ADMIN/mode" -H 'Content-Type: application/json' -d "{"mode":"$mode"}" >/dev/null \
     || die "unknown mode '$mode' (or the provider is not running): normal slow very-slow hang flaky slow-ack errors down"
   say "payment provider: ${c_bold}$mode${c_off}"
 }
@@ -274,7 +274,7 @@ cmd_today() {
 
 cmd_done() {
   local nn="${1:-}" note="${2:-}"
-  [[ "$nn" =~ ^[0-9][0-9]$ ]] || die "usage: ./lab done <NN> \"what I learned in one line\""
+  [[ "$nn" =~ ^[0-9][0-9]$ ]] || die "usage: ./lab done <NN> "what I learned in one line""
   [ -n "$note" ] || die "write one line about what you learned. That line is the point."
   python3 - "$nn" "$note" "$(date +%Y-%m-%d)" <<'PY'
 import re, sys
@@ -291,7 +291,7 @@ else:
 text = "\n".join(lines).rstrip("\n") + f"\n- {day} [{nn}] {note}\n"
 open("PROGRESS.md", "w").write(text)
 PY
-  say "${c_grn}mission $nn done.${c_off} Commit: git add -A && git commit -m \"feat: complete lab $nn\""
+  say "${c_grn}mission $nn done.${c_off} Commit: git add -A && git commit -m "feat: complete lab $nn""
 }
 
 case "${1:-help}" in
