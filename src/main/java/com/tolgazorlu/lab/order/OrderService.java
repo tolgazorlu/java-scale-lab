@@ -70,10 +70,9 @@ public class OrderService {
         for (PlaceOrderRequest.Line line : request.lines()) {
             Product product = products.findById(line.productId())
                     .orElseThrow(() -> new NotFoundException("product " + line.productId()));
-            if (product.getStock() < line.quantity()) {
+            if (products.reserveStock(product.getId(), line.quantity()) == 0) {
                 throw new OutOfStockException(product.getId());
             }
-            product.setStock(product.getStock() - line.quantity());
             order.addItem(new OrderItem(order, product, line.quantity()));
         }
         return orders.save(order).getId();
@@ -82,8 +81,7 @@ public class OrderService {
     private void release(Long orderId) {
         Order order = orders.findById(orderId).orElseThrow();
         for (OrderItem item : order.getItems()) {
-            Product product = item.getProduct();
-            product.setStock(product.getStock() + item.getQuantity());
+            products.releaseStock(item.getProduct().getId(), item.getQuantity());
         }
         order.markFailed();
     }
