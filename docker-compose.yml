@@ -7,7 +7,7 @@
 #   4185 Redis                      (profile: cache)
 #   4186 Kafka                      (profile: events)
 #   4188 OTLP http (traces, logs)
-#   4189 fake payment provider (WireMock)
+#   4189 fake payment provider (infra/payment/provider.py, stateful, with chaos modes)
 name: scale-lab
 
 services:
@@ -33,11 +33,16 @@ services:
       retries: 30
 
   payment:
-    image: wiremock/wiremock:3.13.0
-    command: ["--global-response-templating", "--disable-banner", "--no-request-journal", "--verbose"]
+    image: python:3.13-alpine
+    command: ["python", "-u", "/app/provider.py"]
     ports: ["4189:8080"]
     volumes:
-      - ./infra/wiremock:/home/wiremock:ro
+      - ./infra/payment:/app:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   # Grafana + Prometheus + Tempo (traces) + Loki (logs) + OTel collector in one container.
   lgtm:

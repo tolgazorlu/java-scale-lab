@@ -32,7 +32,7 @@ git add -A && git commit -m "perf: ..."
 | Spring Boot 4.1 + Java 25 | the app | http://localhost:4180 |
 | Postgres 18 + pg_stat_statements | data, slow query analysis | localhost:4184 |
 | Grafana + Prometheus + Tempo + Loki + Pyroscope | metrics, traces, logs, profiles | http://localhost:4182 |
-| WireMock | fake payment provider, can be slowed down or killed | localhost:4189 |
+| payment provider | stateful fake (infra/payment/provider.py): chaos modes, idempotency keys, truthful lookups | localhost:4189 |
 | k6 | load tests (in Docker) | `./lab load ...` |
 
 Grafana ships a ready dashboard: **Scale Lab** (RED, percentiles, connection pool, Tomcat threads,
