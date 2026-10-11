@@ -49,6 +49,8 @@ services:
     environment:
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      # dacospace (localhost:4120) embeds dashboard panels in iframes.
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
     volumes:
       - ./infra/observability/prometheus.yaml:/otel-lgtm/prometheus.yaml:ro
       - ./infra/observability/dashboards:/otel-lgtm/lab-dashboards:ro
