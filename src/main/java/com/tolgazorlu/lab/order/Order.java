@@ -56,6 +56,10 @@ public class Order {
         this.paymentRef = paymentRef;
     }
 
+    public void markFailed() {
+        this.status = "FAILED";
+    }
+
     public Long getId() { return id; }
     public Dealer getDealer() { return dealer; }
     public String getStatus() { return status; }

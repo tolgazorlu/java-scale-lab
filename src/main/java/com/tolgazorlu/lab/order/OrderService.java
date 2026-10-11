@@ -11,6 +11,7 @@ import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * The heart of the system: placing an order.
@@ -28,39 +29,63 @@ public class OrderService {
     private final ProductRepository products;
     private final DealerRepository dealers;
     private final PaymentClient payments;
+    private final TransactionTemplate tx;
 
     public OrderService(OrderRepository orders, ProductRepository products,
-                        DealerRepository dealers, PaymentClient payments) {
+                        DealerRepository dealers, PaymentClient payments, TransactionTemplate tx) {
+        this.tx = tx;
         this.orders = orders;
         this.products = products;
         this.dealers = dealers;
         this.payments = payments;
     }
 
-    @Transactional
+    /**
+     * Mission 05: three short steps instead of one long transaction.
+     * 1. tx: reserve stock and write a PENDING order (holds a connection for milliseconds)
+     * 2. no tx: charge the payment provider (may take seconds, holds no connection)
+     * 3. tx: mark PAID, or FAILED and give the stock back
+     */
     public OrderView place(PlaceOrderRequest request) {
+        Long orderId = tx.execute(status -> reserve(request));
+        Order pending = tx.execute(status -> orders.findById(orderId).orElseThrow());
+        String paymentRef;
+        try {
+            paymentRef = payments.charge(request.dealerId(), pending.getTotalCents());
+        } catch (RuntimeException e) {
+            tx.executeWithoutResult(status -> release(orderId));
+            throw e;
+        }
+        return tx.execute(status -> {
+            Order order = orders.findById(orderId).orElseThrow();
+            order.markPaid(paymentRef);
+            return OrderView.from(order);
+        });
+    }
+
+    private Long reserve(PlaceOrderRequest request) {
         Dealer dealer = dealers.findById(request.dealerId())
                 .orElseThrow(() -> new NotFoundException("dealer " + request.dealerId()));
-
         Order order = new Order(dealer);
         for (PlaceOrderRequest.Line line : request.lines()) {
             Product product = products.findById(line.productId())
                     .orElseThrow(() -> new NotFoundException("product " + line.productId()));
-
-            // LAB (race condition): read, check, write. Not atomic.
             if (product.getStock() < line.quantity()) {
                 throw new OutOfStockException(product.getId());
             }
             product.setStock(product.getStock() - line.quantity());
-
             order.addItem(new OrderItem(order, product, line.quantity()));
         }
+        return orders.save(order).getId();
+    }
 
-        // LAB (slow dependency): external HTTP call while the DB transaction is open.
-        String paymentRef = payments.charge(dealer.getId(), order.getTotalCents());
-        order.markPaid(paymentRef);
-
-        return OrderView.from(orders.save(order));
+    private void release(Long orderId) {
+        Order order = orders.findById(orderId).orElseThrow();
+        for (OrderItem item : order.getItems()) {
+            Product product = item.getProduct();
+            product.setStock(product.getStock() + item.getQuantity());
+        }
+        order.markFailed();
     }
 
     @Transactional(readOnly = true)
