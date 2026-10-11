@@ -8,6 +8,10 @@ import com.tolgazorlu.lab.dealer.Dealer;
 import com.tolgazorlu.lab.dealer.DealerRepository;
 import com.tolgazorlu.lab.payment.PaymentClient;
 import java.util.List;
+import java.util.Optional;
+import com.tolgazorlu.lab.payment.PaymentOutcome;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +28,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 @Service
 public class OrderService {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     private final OrderRepository orders;
     private final ProductRepository products;
@@ -51,16 +57,45 @@ public class OrderService {
         Order pending = tx.execute(status -> orders.findById(orderId).orElseThrow());
         String paymentRef;
         try {
-            paymentRef = payments.charge(request.dealerId(), pending.getTotalCents());
+            paymentRef = payments.charge(orderId, request.dealerId(), pending.getTotalCents());
         } catch (RuntimeException e) {
-            tx.executeWithoutResult(status -> release(orderId));
-            throw e;
+            if (PaymentOutcome.definitelyNotCharged(e)) {
+                tx.executeWithoutResult(status -> settle(orderId, Optional.empty()));
+                throw e;
+            }
+            // Mission 07: the provider may have charged. Keep the stock reserved, do not call it FAILED,
+            // and let PaymentReconciler ask the provider what really happened.
+            log.warn("payment outcome unknown for order {}: {}", orderId, e.getMessage());
+            return tx.execute(status -> {
+                Order order = orders.findForUpdate(orderId).orElseThrow();
+                if (order.isOpen()) order.markPaymentUnknown();
+                return OrderView.from(order);
+            });
         }
-        return tx.execute(status -> {
-            Order order = orders.findById(orderId).orElseThrow();
-            order.markPaid(paymentRef);
+        return tx.execute(status -> settle(orderId, Optional.of(paymentRef)));
+    }
+
+    /**
+     * Records a payment outcome exactly once: PAID with the provider's id, or FAILED with the stock
+     * returned. Called by place() and by PaymentReconciler, so it locks the order row first.
+     * Must run inside a transaction.
+     */
+    public OrderView settle(Long orderId, Optional<String> paymentRef) {
+        Order order = orders.findForUpdate(orderId).orElseThrow();
+        if (!order.isOpen()) {
+            if (paymentRef.isPresent() && !"PAID".equals(order.getStatus())) {
+                // Money moved for an order we already gave up on. A human (or a refund job) must act.
+                log.error("order {} is {} but the provider charged it ({}): refund needed",
+                        orderId, order.getStatus(), paymentRef.get());
+            }
             return OrderView.from(order);
-        });
+        }
+        if (paymentRef.isPresent()) {
+            order.markPaid(paymentRef.get());
+        } else {
+            release(order);
+        }
+        return OrderView.from(order);
     }
 
     private Long reserve(PlaceOrderRequest request) {
@@ -78,8 +113,7 @@ public class OrderService {
         return orders.save(order).getId();
     }
 
-    private void release(Long orderId) {
-        Order order = orders.findById(orderId).orElseThrow();
+    private void release(Order order) {
         for (OrderItem item : order.getItems()) {
             products.releaseStock(item.getProduct().getId(), item.getQuantity());
         }

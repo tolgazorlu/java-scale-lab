@@ -60,6 +60,16 @@ public class Order {
         this.status = "FAILED";
     }
 
+    /** Mission 07: the charge call failed in a way that does not tell us whether money moved. */
+    public void markPaymentUnknown() {
+        this.status = "PAYMENT_UNKNOWN";
+    }
+
+    /** Still waiting for a payment outcome: NEW (charge in flight or crashed) or PAYMENT_UNKNOWN. */
+    public boolean isOpen() {
+        return "NEW".equals(status) || "PAYMENT_UNKNOWN".equals(status);
+    }
+
     public Long getId() { return id; }
     public Dealer getDealer() { return dealer; }
     public String getStatus() { return status; }
