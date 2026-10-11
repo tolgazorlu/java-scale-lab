@@ -1,4 +1,4 @@
-# Mission 04 · 1 request, 63 queries
+# Mission 04 · One request, many queries
 
 **Time:** 60-90 min · **Concept:** N+1, Hibernate lazy loading, batch fetching
 **Lesson:** 04 · **Curriculum link:** system design 1.4(b)

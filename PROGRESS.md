@@ -9,7 +9,7 @@ too. Missions not written yet arrive with `git pull`.
 | 01 | Open your eyes: a dashboard tour | RED, p50/p95/p99, why the average lies | todo | - |
 | 02 | 09:00 rush: the breaking point | Little's Law, connection pool, saturation | todo | - |
 | 03 | The dealer's order history | EXPLAIN, seq scan, index, Flyway migration | todo | - |
-| 04 | 1 request, 63 queries | N+1, Hibernate lazy loading, batch fetching | todo | - |
+| 04 | One request, many queries | N+1, Hibernate lazy loading, batch fetching | todo | - |
 | 05 | Slow payments slow down everything | transaction boundary, pool exhaustion | todo | - |
 | 06 | The last 10 items | race condition, lost update, atomic UPDATE, optimistic lock | todo | - |
 | 07 | The provider stops answering | timeouts (connect/read), fail fast | todo | - |
