@@ -233,31 +233,32 @@ charge_delay() {
 cmd_charges() {
   local since_file=".lab-charges-since"
   if [ "${1:-}" = "reset" ]; then
-    curl -sf -X DELETE "$PAY_ADMIN/requests" >/dev/null
-    psql_lab -tAc "SELECT now()" | head -1 > "$since_file"
+    date -u +%Y-%m-%dT%H:%M:%SZ > "$since_file"
     say "charge window started. Run a load test, then ./lab charges"
     return
   fi
   [ -f "$since_file" ] || die "start a window first: ./lab charges reset"
   local since; since=$(cat "$since_file")
-  say "${c_bold}payment provider${c_off} (POST /charges since $since)"
-  curl -sf "$PAY_ADMIN/requests?limit=100000" | python3 -c '
-import json, sys, collections
-reqs = [r["request"] for r in json.load(sys.stdin)["requests"] if r["request"]["method"] == "POST" and r["request"]["url"].startswith("/charges")]
-keys = collections.Counter()
-nokey = 0
-for r in reqs:
-    h = {k.lower(): v for k, v in r.get("headers", {}).items()}
-    k = h.get("idempotency-key")
-    if k: keys[k] += 1
-    else: nokey += 1
-print(f"  charge requests        {len(reqs)}")
-print(f"  without Idempotency-Key {nokey}")
-print(f"  distinct keys          {len(keys)}   (max requests for one key: {max(keys.values()) if keys else 0})")
+  say "${c_bold}payment provider${c_off}: charge requests that ARRIVED since $since (logged on arrival, even if the caller gave up)"
+  # WireMock --verbose logs every request when it arrives; its request journal would miss cancelled calls.
+  # Count lines, not blocks: concurrent requests interleave their log blocks, but no line is lost.
+  # Only charge requests carry an Idempotency-Key header, so key lines belong to charges.
+  docker compose logs --no-log-prefix --since "$since" payment 2>/dev/null | python3 -c '
+import sys, collections
+total, keys = 0, collections.Counter()
+for line in sys.stdin:
+    if " - POST /charges" in line:
+        total += 1
+    elif line.lower().startswith("idempotency-key:"):
+        keys[line.split(":", 1)[1].strip(" []\n")] += 1
+keyed = sum(keys.values())
+print(f"  charge requests           {total}")
+print(f"  without Idempotency-Key   {total - keyed}")
+print(f"  distinct keys             {len(keys)}   (most requests for one key: {max(keys.values()) if keys else 0})")
 '
   say "${c_bold}orders${c_off} created in the same window"
   psql_lab -tAc "SELECT status, count(*) FROM orders WHERE created_at >= '$since' GROUP BY status ORDER BY status" | sed 's/^/  /; s/|/  /'
-  say "In slow-ack mode the provider completes every request it receives: each request without a key is money taken."
+  say "Money taken in slow-ack mode = requests without a key + distinct keys (a real provider charges a key once)."
 }
 
 cmd_chaos() {

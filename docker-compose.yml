@@ -34,7 +34,7 @@ services:
 
   payment:
     image: wiremock/wiremock:3.13.0
-    command: ["--global-response-templating", "--disable-banner", "--no-request-journal"]
+    command: ["--global-response-templating", "--disable-banner", "--no-request-journal", "--verbose"]
     ports: ["4189:8080"]
     volumes:
       - ./infra/wiremock:/home/wiremock:ro
